@@ -18,7 +18,6 @@ import math
 import random
 from sklearn.utils import shuffle
 from multiprocessing import Lock, Process, Queue as Queue, Value, Array, cpu_count
-
 from config import cfg
 from utils.data_aug import aug_data
 from utils.preprocess import process_pointcloud
@@ -143,6 +142,10 @@ class KittiLoader(object):
                     else:
                         labels.append([''])
                     tag.append(self.data_tag[load_index])
+
+                    ######################################################
+                    # TODO:
+                    # we need to change the preprocessing of point cloud for point fusion
                     voxel.append(process_pointcloud(raw_lidar[-1]))
 
                 load_index += 1
