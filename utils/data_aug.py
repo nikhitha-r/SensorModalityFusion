@@ -24,22 +24,33 @@ def brighten(image_in):
     print(image_in.shape)
     #image_in = np.asarray([image_in], dtype=np.uint8)
     # Generates value between 0.0 and 2.0
-    coeff = 2* np.random.uniform(0.5,1)
+    coeff = 2* np.random.uniform(0.6,1.5)
     print(image_in.shape)
     # Conversion to HLS
-    image_HLS = cv2.cvtColor(image_in, cv2.COLOR_RGB2HLS)
-    image_HLS = np.array(image_HLS, dtype = np.float64)
+    image_HLS = cv2.cvtColor(image_in, cv2.COLOR_BGR2HSV)
+    #image_HLS = np.array(image_HLS, dtype = np.float64)
     # Scale pixel values up or down for channel 1(Lightness)
-    image_HLS[:,:,1] = image_HLS[:,:,1]*coeff
+    #image_HLS[:,:,1] = image_HLS[:,:,1]*coeff
+    h, s, v = cv2.split(image_HLS)
+    value = 40
+    lim = 255 - value
+    v[v > lim] = 255
+    v[v <= lim] += value
+
+    final_hsv = cv2.merge((h, s, v))
+    image_HLS[:,:,2] = image_HLS[:,:,2] + 40
+    """
     if(coeff>1):
         # Sets all values above 255 to 255
         image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255
     else:
         image_HLS[:,:,1][image_HLS[:,:,1]<0]=0
     image_HLS = np.array(image_HLS, dtype = np.uint8)
+    """
     # Conversion to RGB
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB)
-    return image_RGB
+    image_BGR = cv2.cvtColor(final_hsv,cv2.COLOR_HSV2BGR)
+    #image_RGB = cv2.cvtColor(final_hsv,cv2.COLOR_BGR2RGB)
+    return image_BGR
 
 
 
@@ -104,7 +115,7 @@ def add_blur(image, x,y,hw,fog_coeff):
     return output
 
 def snow_process(image,snow_coeff):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
+    image_HLS = cv2.cvtColor(image,cv2.COLOR_BGR2HLS) ## Conversion to HLS
     image_HLS = np.array(image_HLS, dtype = np.float64) 
     brightness_coefficient = 2.5 
     imshape = image.shape
@@ -112,7 +123,7 @@ def snow_process(image,snow_coeff):
     image_HLS[:,:,1][image_HLS[:,:,1]<snow_point] = image_HLS[:,:,1][image_HLS[:,:,1]<snow_point]*brightness_coefficient ## scale pixel values up for channel 1(Lightness)
     image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255 ##Sets all values above 255 to 255
     image_HLS = np.array(image_HLS, dtype = np.uint8)
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
+    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2BGR) ## Conversion to RGB
     return image_RGB
 
 def snow(image, snow_coeff=-1):
@@ -150,14 +161,14 @@ def generate_shadow_coordinates(imshape, no_of_shadows, rectangular_roi, shadow_
     return vertices_list ## List of shadow vertices
 
 def shadow_process(image,no_of_shadows,x1,y1,x2,y2, shadow_dimension):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
+    image_HLS = cv2.cvtColor(image,cv2.COLOR_BGR2HLS) ## Conversion to HLS
     mask = np.zeros_like(image) 
     imshape = image.shape
     vertices_list= generate_shadow_coordinates(imshape, no_of_shadows,(x1,y1,x2,y2), shadow_dimension) #3 getting list of shadow vertices
     for vertices in vertices_list: 
         cv2.fillPoly(mask, vertices, 255) ## adding all shadow polygons on empty mask, single 255 denotes only red channel
     image_HLS[:,:,1][mask[:,:,0]==255] = image_HLS[:,:,1][mask[:,:,0]==255]*0.5   ## if red channel is hot, image's "Lightness" channel's brightness is lowered 
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
+    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2BGR) ## Conversion to RGB
     return image_RGB
 
 def shadow(image,no_of_shadows=1,rectangular_roi=(-1,-1,-1,-1), shadow_dimension=5):## ROI:(top-left x1,y1, bottom-right x2,y2), shadow_dimension=no. of sides of polygon generated
@@ -198,7 +209,9 @@ def shadow(image,no_of_shadows=1,rectangular_roi=(-1,-1,-1,-1), shadow_dimension
     return image_RGB
 
 def change_light(image, coeff):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
+    image_HLS = image
+    image_HLS = cv2.cvtColor(image,cv2.COLOR_BGR2HSV) ## Conversion to HLS
+    """
     image_HLS = np.array(image_HLS, dtype = np.float64) 
     image_HLS[:,:,1] = image_HLS[:,:,1]*coeff ## scale pixel values up or down for channel 1(Lightness)
     if(coeff>1):
@@ -206,7 +219,18 @@ def change_light(image, coeff):
     else:
         image_HLS[:,:,1][image_HLS[:,:,1]<0]=0
     image_HLS = np.array(image_HLS, dtype = np.uint8)
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
+    """
+    
+    """
+    lim = 255 - value
+    v[v > lim] = 255
+    v[v <= lim] -= value
+
+    final_hsv = cv2.merge((h, s, v))
+    """
+    image_HLS[:,:,2] = image_HLS[:,:,2]*coeff
+    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HSV2BGR) ## Conversion to RGB
+    #image_RGB = image_HLS
     return image_RGB 
 
 def darken(image, darkness_coeff=-1): ##function to darken the image
@@ -225,7 +249,7 @@ def darken(image, darkness_coeff=-1): ##function to darken the image
             image_RGB.append(change_light(img,darkness_coeff_t))
     else:
         if(darkness_coeff==-1):
-             darkness_coeff_t=1- random.uniform(0,0.6)
+             darkness_coeff_t=1- random.uniform(0,0.8)
         else:
             darkness_coeff_t=1- darkness_coeff  
         image_RGB= change_light(image,darkness_coeff_t)
@@ -398,29 +422,13 @@ def rain_process(image,slant,drop_length,drop_color,drop_width,rain_drops):
         cv2.line(image_t,(rain_drop[0],rain_drop[1]),(rain_drop[0]+slant,rain_drop[1]+drop_length),drop_color,drop_width)
     image= cv2.blur(image_t,(7,7)) ## rainy view are blurry
     brightness_coefficient = 0.7 ## rainy days are usually shady 
-    image_HLS = hls(image) ## Conversion to HLS
+    image_HLS = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
     image_HLS[:,:,1] = image_HLS[:,:,1]*brightness_coefficient ## scale pixel values down for channel 1(Lightness)
-    image_RGB= rgb(image_HLS,'hls') ## Conversion to RGB
+    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HSV2BGR)
+
     return image_RGB
 
-def hls(image,src='RGB'):
-    if(type(image) is list):
-        image_HLS=[]
-        image_list=image
-        for img in image_list:
-            eval('image_HLS.append(cv2.cvtColor(img,cv2.COLOR_'+src.upper()+'2HLS))')
-    else:
-        image_HLS = eval('cv2.cvtColor(image,cv2.COLOR_'+src.upper()+'2HLS)')
-    return image_HLS
-def rgb(image, src='BGR'):
-    if(type(image) is list):
-        image_RGB=[]
-        image_list=image
-        for img in image_list:
-            eval('image_RGB.append(cv2.cvtColor(img,cv2.COLOR_'+src.upper()+'2RGB))')
-    else:
-        image_RGB= eval('cv2.cvtColor(image,cv2.COLOR_'+src.upper()+'2RGB)')
-    return image_RGB
+
 ##rain_type='drizzle','heavy','torrential'
 def rain(image,slant=-1,drop_length=15,drop_width=1,drop_color=(200,200,200),rain_type='None'): ## (200,200,200) a shade of gray
     slant_extreme=slant
@@ -471,10 +479,11 @@ def generate_random_lines(imshape,slant,drop_length,rain_type):
 aug_list = ["brighten", "blur", "snow", "darken", "fog", "shadow", "sun_flare", "rain"]
 image_dir = "/storage/remote/atcremers61/w0017/KITTI/PointRCNN/KITTI/object/training/image_2/"
 aug_dir = "/usr/prakt/w0017/Augmented_Data/images_aug/"
+
 with open("../split/val.txt", "r") as valFile:
     num_set = sum(1 for line in valFile)
-    aug_num = int(40/100 * num_set)
-    print(num_set, aug_num)
+    aug_num = int(0.4 * num_set)
+    print("testing", num_set, aug_num)
     #lines = valFile.read().splitlines()
 with open("../split/val.txt", "r") as valFile:
     with open("../split/aug.txt", "w") as augFile:
@@ -494,18 +503,13 @@ with open("../split/val.txt", "r") as valFile:
             print(random_line, random_aug)
             print(image_dir + random_line + ".png")
             orig_image = cv2.imread(image_dir + random_line.strip() + ".png", 1)
-            """
-            mod = rain(orig_image)
-            cv2.imwrite("mod_rain.png", mod)
-            cv2.imwrite("orig_rain.png", orig_image)
-            break
-            """
+           
             image_mod = eval(random_aug)(orig_image)
 
             image_id = int(image_id) + 1
 
             cv2.imwrite(aug_dir + "00" + str(image_id) + ".png", image_mod)
-            
+
 
             
         
