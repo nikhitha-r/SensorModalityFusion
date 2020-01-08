@@ -11,6 +11,11 @@ import time
 from avod.builders import optimizer_builder
 from avod.core import trainer_utils
 from avod.core import summary_utils
+####################################################################################
+# TODO PROJECT: import PIL for image and bev feature saving
+from PIL import Image
+import numpy as np
+####################################################################################
 
 slim = tf.contrib.slim
 
@@ -254,23 +259,46 @@ def train(model, train_config):
         fc1 = model._moe_model.fc1
         fc2 = model._moe_model.fc2
         weights_pre = model._moe_model.out
+        input_img_feat = model._moe_model.img_feature_maps
+        input_bev_feat = model._moe_model.bev_feature_maps
         
-        #img_weight = weights_pre['img_weight']#.eval(feed_dict, self._sess)
-        #bev_weight = weights_pre['bev_weight']#.eval(feed_dict, self._sess)
-        #print(img_weight.eval(feed_dict, sess))
-        #print(bev_weight.eval(feed_dict, sess))
-        # print([prediction_dict[x].eval(feed_dict, sess) for i,x in enumerate(prediction_dict) if i < 10])
-        #print(fc1.shape)
-        #print(fc1.eval(feed_dict,sess))
-        print("fc2 shape: ",fc2.shape)
-        print("fc2: ", fc2.eval(feed_dict,sess))
-        print("weights: ", weights_pre.eval(feed_dict,sess))
-        for var in var_moe:
-            print(var.name)
-            #print(var.eval(sess))
-        print("trainable: ",var_moe[-2], var_moe[-2].eval(sess))
-        
-        #print(weights_pre.eval(feed_dict,sess))
+        # # print the variables and tensors for debugging
+        # print("fc1 shape: ",fc1.shape)
+        # print("fc2 shape: ",fc2.shape)
+        # print("fc2: ", fc2.eval(feed_dict,session=sess))
+        # print("weights: ", weights_pre.eval(feed_dict,session=sess))
+        # for var in var_moe:
+            # print(var.name)
+        # fc2_weights = var_moe[-2].eval(sess)
+        # fc2_bias = var_moe[-1].eval(sess)
+        # print("fc2 trainable weights shape: ", fc2_weights.shape)
+        # print("fc2 trainable bias shape: ", fc2_bias.shape)
+        # print("fc2 trainable weights: ",var_moe[-2], fc2_weights)
+        # print("fc2 trainable bias: ",var_moe[-1], fc2_bias)
+
+        # result = np.dot(fc1.eval(feed_dict, sess), fc2_weights) + fc2_bias
+        # print("result: ", result)
+# 
+        # paths_config = model.model_config.paths_config
+        # predictions_base_dir = paths_config.pred_dir
+        # 
+        # img_feat = (input_img_feat.eval(feed_dict,sess)*255).astype(np.uint8)
+        # bev_feat = (input_bev_feat.eval(feed_dict,sess)*255).astype(np.uint8)
+        # img_h, img_w = img_feat.shape[1:3]
+        # bev_h, bev_w = bev_feat.shape[1:3]
+        # img_feat = img_feat.reshape((img_h,img_w))
+        # bev_feat = bev_feat.reshape((bev_h,bev_w))
+# 
+        # img_feat_image = Image.fromarray(img_feat, 'L')
+        # bev_feat_image = Image.fromarray(bev_feat, 'L')
+        # if not os.path.exists(os.path.join(predictions_base_dir, "features")):
+            # os.makedirs(os.path.join(predictions_base_dir, "features"))
+        # feat_dir = os.path.join(predictions_base_dir, "features")
+
+        # for saving feature maps
+        # img_feat_image.save(feat_dir+"/img_{}.png".format(step))
+        # bev_feat_image.save(feat_dir+"/bev_{}.png".format(step))
+
         #######################################################################################
 
     # Close the summary writers
