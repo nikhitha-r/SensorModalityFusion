@@ -349,6 +349,11 @@ class RpnModel(model.DetectionModel):
                 self._img_anchors_norm_pl,
                 tf_box_indices,
                 self._proposal_roi_crop_size)
+            
+            print("img_proposal_rois shape")
+            # print(img_proposal_rois.shape)
+            # for i in range(img_proposal_rois.shape[0]):
+                # print(img_proposal_rois[i])
         ####################################################################################
         # TODO PROJECT: insert code here to add mixture of experts
         # self._moe_model = MoeModel(img_proposal_input, bev_proposal_input)

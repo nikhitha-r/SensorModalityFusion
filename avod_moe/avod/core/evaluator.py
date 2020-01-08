@@ -74,6 +74,12 @@ class Evaluator:
 
         self.do_kitti_native_eval = do_kitti_native_eval
 
+        ##########################################################################################
+        # TODO PROJECT: create weights list for img and bev
+        self.img_weights_list = []
+        self.bev_weights_list = []
+        ##########################################################################################
+
         # Create a variable tensor to hold the global step
         self.global_step_tensor = tf.Variable(
             0, trainable=False, name='global_step')
@@ -256,6 +262,23 @@ class Evaluator:
                     self.get_avod_predicted_boxes_3d_and_scores(predictions,
                                                                 box_rep)
                 np.savetxt(avod_file_path, predictions_and_scores, fmt='%.5f')
+
+                ##########################################################################################
+                # TODO PROJECT: save weights and cooresponding scene indices
+                weights_pre = self.model.moe_prediction
+                # sess = tf.Session()
+                img_weight = weights_pre['img_weight']#.eval(feed_dict, self._sess)
+                bev_weight = weights_pre['bev_weight']#.eval(feed_dict, self._sess)
+                print(img_weight)
+                print(bev_weight)
+                self.img_weights_list.append(img_weight)
+                self.bev_weights_list.append(bev_weight)
+                weights_dir = predictions_base_dir + '/weights'
+                if not os.path.exists(weights_dir):
+                    os.makedirs(weights_dir)
+                self.weights_path = weights_dir + '/{}.txt'.format(global_step)
+                # np.savetxt(self.weights_path, np.vstack([self.img_weights_list,self.bev_weights_list]).T)
+                ##########################################################################################
 
                 if self.full_model:
                     if box_rep in ['box_3d', 'box_4ca']:
@@ -458,8 +481,20 @@ class Evaluator:
                                                      number_of_evaluations))
                         continue
 
+                    ##########################################################################################
+                    # TODO PROJECT: clear original weights lists
+                    self.img_weights_list = []
+                    self.bev_weights_list = []
+                    ##########################################################################################
+                    
                     self.run_checkpoint_once(checkpoint_to_restore)
                     number_of_evaluations += 1
+
+                    ##########################################################################################
+                    # TODO PROJECT: save weights and cooresponding scene indices
+                    print("Saving img and bev weights to: ",self.weights_path)
+                    np.savetxt(self.weights_path, np.vstack([self.img_weights_list,self.bev_weights_list]).T)
+                    ##########################################################################################
 
                     # Save the id of the latest evaluated checkpoint
                     last_checkpoint_id = ckpt_id

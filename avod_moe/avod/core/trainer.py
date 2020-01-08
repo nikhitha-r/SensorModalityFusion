@@ -71,13 +71,13 @@ def train(model, train_config):
     ##############################################################################################
     # TODO PROJECT: select trainable variables to set gradient to 0(var0)
 
-    var1 = [var for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='mix_of_experts')]
+    var_moe = [var for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='mix_of_experts')]
     var0 = [var for var in tf.trainable_variables()]
-    var_all_but_var1 = [var for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
+    var_all_but_var_moe = [var for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
     
-    for var in var1:
+    for var in var_moe:
         var0.remove(var)
-        var_all_but_var1.remove(var)
+        var_all_but_var_moe.remove(var)
 
     ##############################################################################################
 
@@ -108,7 +108,7 @@ def train(model, train_config):
         train_op1 = slim.learning.create_train_op(
             total_loss,
             training_optimizer1,
-            variables_to_train=var1,
+            variables_to_train=var_moe,#[x for x in tf.trainable_variables()],#var_moe,
             clip_gradient_norm=1.0,
             global_step=global_step_tensor)
         train_op0 = slim.learning.create_train_op(
@@ -178,14 +178,18 @@ def train(model, train_config):
             ##############################################################################################
             # TODO PROJECT: take checkpoints from original avod model
             checkpoint_path_start = "/storage/remote/atcremers62/avod_moe/avod/data/outputs/pyramid_cars_with_aug_example/checkpoints/start/pyramid_cars_with_aug_example-00100000"
-            # variables_to_restore = slim.get_variables_to_restore(include=var0, exclude=var1)
+            # variables_to_restore = slim.get_variables_to_restore(include=var0, exclude=var_moe)
             variables_to_restore = dict()
-            for var in var_all_but_var1:
+            for var in var_all_but_var_moe:
                 # candidates = slim.get_variables(var.name)
                 # for candidate in candidates:
                     # print(candidate.op.name)
                     # print(var.op.name)
                 variables_to_restore[var.op.name] = slim.get_unique_variable(var.op.name)
+            print("####################################################################")
+            for i in variables_to_restore:
+                print(i)
+            print("####################################################################")
 
             init_assign_op, init_feed_dict = slim.assign_from_checkpoint(
                 checkpoint_path_start, variables_to_restore)
@@ -244,6 +248,30 @@ def train(model, train_config):
         else:
             # Run the train op only
             sess.run(train_op1, feed_dict)
+        
+        #######################################################################################
+        # TODO PROJECT: output weights for img and bev
+        fc1 = model._moe_model.fc1
+        fc2 = model._moe_model.fc2
+        weights_pre = model._moe_model.out
+        
+        #img_weight = weights_pre['img_weight']#.eval(feed_dict, self._sess)
+        #bev_weight = weights_pre['bev_weight']#.eval(feed_dict, self._sess)
+        #print(img_weight.eval(feed_dict, sess))
+        #print(bev_weight.eval(feed_dict, sess))
+        # print([prediction_dict[x].eval(feed_dict, sess) for i,x in enumerate(prediction_dict) if i < 10])
+        #print(fc1.shape)
+        #print(fc1.eval(feed_dict,sess))
+        print("fc2 shape: ",fc2.shape)
+        print("fc2: ", fc2.eval(feed_dict,sess))
+        print("weights: ", weights_pre.eval(feed_dict,sess))
+        for var in var_moe:
+            print(var.name)
+            #print(var.eval(sess))
+        print("trainable: ",var_moe[-2], var_moe[-2].eval(sess))
+        
+        #print(weights_pre.eval(feed_dict,sess))
+        #######################################################################################
 
     # Close the summary writers
     train_writer.close()
