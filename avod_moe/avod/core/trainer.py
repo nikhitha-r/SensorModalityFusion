@@ -83,7 +83,7 @@ def train(model, train_config):
     for var in var_moe:
         var0.remove(var)
         var_all_but_var_moe.remove(var)
-
+    
     ##############################################################################################
 
     # Optimizer
@@ -259,14 +259,18 @@ def train(model, train_config):
         fc1 = model._moe_model.fc1
         fc2 = model._moe_model.fc2
         weights_pre = model._moe_model.out
-        input_img_feat = model._moe_model.img_feature_maps
-        input_bev_feat = model._moe_model.bev_feature_maps
+        # avod_bev_rois = model.bev_rois
+        # avod_img_rois = model.img_rois
+        # input_img_feat = model._moe_model.img_feature_maps
+        # input_bev_feat = model._moe_model.bev_feature_maps
         
         # # print the variables and tensors for debugging
         # print("fc1 shape: ",fc1.shape)
         # print("fc2 shape: ",fc2.shape)
-        # print("fc2: ", fc2.eval(feed_dict,session=sess))
-        # print("weights: ", weights_pre.eval(feed_dict,session=sess))
+        print("fc2: ", fc2.eval(feed_dict,session=sess))
+        print("weights: ", weights_pre.eval(feed_dict,session=sess))
+        # print("avod_bev_rois shape: ", avod_bev_rois.eval(feed_dict, sess).shape)
+        # print("avod_img_rois shape[0]: ", avod_img_rois.eval(feed_dict, sess).shape[0])
         # for var in var_moe:
             # print(var.name)
         # fc2_weights = var_moe[-2].eval(sess)

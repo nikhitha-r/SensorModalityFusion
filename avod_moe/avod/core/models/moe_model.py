@@ -7,10 +7,13 @@ class MoeModel():
         # feature maps after bottle neck to one channel
         self.img_feature_maps = img_feature_maps
         self.bev_feature_maps = bev_feature_maps
+
+        # set the bev feature to zero for testing
+        # self.bev_feature_maps = tf.zeros_like(self.bev_feature_maps)
         self.img_proposal_boxes = img_proposal_boxes
         self.bev_proposal_boxes = bev_proposal_boxes
-        self.gating_net_input = tf.concat([tf.reshape(self.img_feature_maps, [1,-1]), 
-                                           tf.reshape(self.bev_feature_maps,[1,-1])], axis=1)
+        # self.gating_net_input = tf.concat([tf.reshape(self.img_feature_maps, [1,-1]), 
+                                        #    tf.reshape(self.bev_feature_maps,[1,-1])], axis=1)
         self.placeholders = dict()
 
     def _add_placeholder(self, dtype, shape, name):
@@ -30,14 +33,21 @@ class MoeModel():
 
     def build(self):
 
-        with tf.variable_scope("mix_of_experts", "moe", [self.gating_net_input]):
-            tensor_in = self.gating_net_input
-            print(tensor_in.shape)
-            self.fc1 = slim.fully_connected(tensor_in, 128, scope='fc1')
-            self.fc2 = slim.fully_connected(self.fc1,2,scope='fc2')
+        with tf.variable_scope("mix_of_experts", "moe", [self.img_feature_maps, self.bev_feature_maps]):
+            self.img_conv1 = slim.conv2d(self.img_feature_maps, 16, [3,3],scope='img_conv1')
+            self.bev_conv1 = slim.conv2d(self.bev_feature_maps, 16, [3,3],scope='bev_conv1')
+            self.img_maxpool1 = slim.max_pool2d(self.img_conv1, [2,2], 2, scope='img_maxpool1')
+            self.bev_maxpool1 = slim.max_pool2d(self.bev_conv1, [2,2], 2, scope='bev_maxpool1')
+            self.img_conv2 = slim.conv2d(self.img_maxpool1, 1, [3,3], stride=3, scope='img_conv2')
+            self.bev_conv2 = slim.conv2d(self.bev_maxpool1, 1, [3,3], stride=3, scope='bev_conv2')
+            self.gating_net_input = tf.concat([slim.flatten(self.img_conv2), 
+                                           slim.flatten(self.bev_conv2)], axis=1)
+            self.fc1 = slim.fully_connected(self.gating_net_input, 128, scope='fc1')
+            self.fc2 = slim.fully_connected(self.fc1,2,activation_fn=None,scope='fc2')#,activation_fn=None
+            
             self.out = slim.softmax(self.fc2)#tf.div(self.fc2, tf.reduce_sum(self.fc2,axis=1))
 
         prediction = dict()
-        prediction['img_weight'] = self.out[0,0]
-        prediction['bev_weight'] = self.out[0,1]
+        prediction['img_weight'] = self.out[:,0]
+        prediction['bev_weight'] = self.out[:,1]
         return prediction

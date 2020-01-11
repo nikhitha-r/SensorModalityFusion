@@ -231,6 +231,11 @@ class AvodModel(model.DetectionModel):
             # batch index to whom this box belongs. Because the batch size here is 1, so it 
             # doesn't matter
             # bev_rois is a 4-D tensor of shape [num_boxes, crop_height, crop_width, depth]
+            ####################################################################################
+            # TODO PROJECT: set bev_feature_maps or img_feature_maps to zeros for testing
+            # img_feature_maps = tf.zeros_like(img_feature_maps)
+            ####################################################################################
+
             bev_rois = tf.image.crop_and_resize(
                 bev_feature_maps,
                 bev_proposal_boxes_norm_tf_order,
@@ -245,17 +250,23 @@ class AvodModel(model.DetectionModel):
                 self._proposal_roi_crop_size,
                 name='img_rois')
 
+            ####################################################################################
+            # TODO PROJECT: create member variables for accessing
+            # self.bev_rois = bev_rois
+            # self.img_rois = img_rois
+            ####################################################################################
+
         ####################################################################################
         # TODO PROJECT: insert code here to add mixture of experts
-        self._moe_model = MoeModel(rpn_model.img_bottleneck, rpn_model.bev_bottleneck, img_proposal_boxes, bev_proposal_boxes)
+        self._moe_model = MoeModel(img_rois, bev_rois, img_proposal_boxes, bev_proposal_boxes)
         self._moe_model._set_up_input_pls()
         self.moe_prediction = self._moe_model.build()
 
         ####################################################################################
         ####################################################################################
         # TODO PROJECT: weight the feature before average img and bev
-        weighted_img_rois = tf.multiply(self.moe_prediction['img_weight'],img_rois)
-        weighted_bev_rois = tf.multiply(self.moe_prediction['bev_weight'],bev_rois)
+        weighted_img_rois = tf.multiply(tf.reshape(self.moe_prediction['img_weight'],[-1,1,1,1]),img_rois)
+        weighted_bev_rois = tf.multiply(tf.reshape(self.moe_prediction['bev_weight'],[-1,1,1,1]),bev_rois)
         ####################################################################################
 
         # Fully connected layers (Box Predictor)
