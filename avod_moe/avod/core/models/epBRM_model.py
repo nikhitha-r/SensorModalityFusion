@@ -38,15 +38,15 @@ class epBRM():
             num_points = self._point_input.get_shape()[1].value
 
             # Build the network
-            self.convnet1 = slim.conv2d(self._point_input, 64, [1,1], scope='convnet1')
-            self.convnet2 = slim.conv2d(self.convnet1, 128, [1,1], scope='convnet2')
-            self.convnet3 = slim.conv2d(self.convnet2, 256, [1,1], scope='convnet3')
+            self.convnet1 = slim.conv2d(self._point_input, 64, 1, scope='convnet1')
+            self.convnet2 = slim.conv2d(self.convnet1, 128, 1, scope='convnet2')
+            self.convnet3 = slim.conv2d(self.convnet2, 256, 1, scope='convnet3')
 
-            self.maxpool1 = slim.max_pool2d(self.convnet3, [512, 1], 2, scope='maxpool1')
+            self.maxpool1 = slim.max_pool2d(self.convnet3, [2, 2], 2, scope='maxpool1')
 
-            self.convnet4 = slim.conv2d(self.maxpool1, 256, [1,1], scope='convnet4')
-            self.convnet5 = slim.conv2d(self.convnet4, 128, [1,1], scope='convnet5')
-            self.convnet6 = slim.conv2d(self.convnet5, 64, [1,1], scope='convnet6')
+            self.convnet4 = slim.conv2d(self.maxpool1, 256, 1, scope='convnet4')
+            self.convnet5 = slim.conv2d(self.convnet4, 128, 1, scope='convnet5')
+            self.convnet6 = slim.conv2d(self.convnet5, 64, 1, scope='convnet6')
 
             #self.convnet6 = slim.conv2d(self.convnet2, 7, [1,1], scope='convnet6')
 
