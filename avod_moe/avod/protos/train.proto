@@ -28,4 +28,7 @@ message TrainConfig {
 
     // GPU options
     optional bool allow_gpu_mem_growth = 11 [default = false];
+
+    // Flag to enable data augmentation during training
+    optional bool train_aug = 12; 
 }
