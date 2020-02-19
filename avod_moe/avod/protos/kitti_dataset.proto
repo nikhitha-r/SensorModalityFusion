@@ -37,4 +37,7 @@ message KittiDatasetConfig {
 
     // KittiUtils configuration
     optional KittiUtilsConfig kitti_utils_config = 20;
+
+    // Flag to enable data augmentation during training
+    optional bool train_aug = 21; 
 }
