@@ -12,9 +12,11 @@ import avod
 import avod.builders.config_builder_util as config_builder
 from avod.builders.dataset_builder import DatasetBuilder
 from avod.core.models.avod_model import AvodModel
+from avod.core.models.avod_moe_model import AvodMoeModel
 from avod.core.models.rpn_model import RpnModel
 from avod.core.models.epBRM_model import epBRM
 from avod.core import trainer
+from avod.core import trainer_moe
 from avod.core import epbrm_trainer
 
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -39,6 +41,11 @@ def train(model_config, train_config, dataset_config):
                               train_val_test=train_val_test,
                               dataset=dataset)
             trainer.train(model, train_config)
+        elif model_name == 'avod_moe_model':
+            model = AvodMoeModel(model_config,
+                              train_val_test=train_val_test,
+                              dataset=dataset)
+            trainer_moe.train(model, train_config)
         elif model_name == 'epbrm':
             model = epBRM(model_config, dataset=dataset)
             epbrm_trainer.train(model, train_config)

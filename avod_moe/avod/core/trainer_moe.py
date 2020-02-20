@@ -165,7 +165,7 @@ def train(model, train_config):
             # Initialize the variables
             
             # Restore checkpoints from original avod model. Give the correct path to restore
-            checkpoint_path_start = "/storage/remote/atcremers62/avod_moe/avod/data/outputs/pyramid_cars_with_aug_example/checkpoints/start/pyramid_cars_with_aug_example-00100000"
+            checkpoint_path_start = train_config.moe_config.initial_avod_checkpoint_path
             variables_to_restore = dict()
             for var in var_all_but_var_moe:
                 
@@ -256,24 +256,32 @@ def train(model, train_config):
 
         # result = np.dot(fc1.eval(feed_dict, sess), fc2_weights) + fc2_bias
         # print("result: ", result)
-        # paths_config = model.model_config.paths_config
-        # predictions_base_dir = paths_config.pred_dir
-        # 
-        # img_feat = (input_img_feat.eval(feed_dict,sess)*255).astype(np.uint8)
-        # bev_feat = (input_bev_feat.eval(feed_dict,sess)*255).astype(np.uint8)
-        # img_h, img_w = img_feat.shape[1:3]
-        # bev_h, bev_w = bev_feat.shape[1:3]
-        # img_feat = img_feat.reshape((img_h,img_w))
-        # bev_feat = bev_feat.reshape((bev_h,bev_w))
-        # img_feat_image = Image.fromarray(img_feat, 'L')
-        # bev_feat_image = Image.fromarray(bev_feat, 'L')
-        # if not os.path.exists(os.path.join(predictions_base_dir, "features")):
-            # os.makedirs(os.path.join(predictions_base_dir, "features"))
-        # feat_dir = os.path.join(predictions_base_dir, "features")
 
-        # for saving feature maps
-        # img_feat_image.save(feat_dir+"/img_{}.png".format(step))
-        # bev_feat_image.save(feat_dir+"/bev_{}.png".format(step))
+        # Save the weights if flag is set
+        if train_config.moe_config.save_model_params:
+            """
+            # Get the dir path
+            paths_config = model.model_config.paths_config
+            predictions_base_dir = paths_config.pred_dir
+            input_img_feat = model._moe_model.img_feature_maps
+            input_bev_feat = model._moe_model.bev_feature_maps
+            # Get img and bev fetaures
+            img_feat = (input_img_feat.eval(feed_dict,sess)*255).astype(np.uint8)
+            bev_feat = (input_bev_feat.eval(feed_dict,sess)*255).astype(np.uint8)
+            img_h, img_w = img_feat.shape[1:3]
+            bev_h, bev_w = bev_feat.shape[1:3]
+            img_feat = img_feat.reshape((img_h,img_w))
+            bev_feat = bev_feat.reshape((bev_h,bev_w))
+            img_feat_image = Image.fromarray(img_feat, 'L')
+            bev_feat_image = Image.fromarray(bev_feat, 'L')
+            if not os.path.exists(os.path.join(predictions_base_dir, "features")):
+                os.makedirs(os.path.join(predictions_base_dir, "features"))
+            feat_dir = os.path.join(predictions_base_dir, "features")
+
+            #for saving feature maps
+            img_feat_image.save(feat_dir+"/img_{}.png".format(step))
+            bev_feat_image.save(feat_dir+"/bev_{}.png".format(step))
+            """
 
         #######################################################################################
 

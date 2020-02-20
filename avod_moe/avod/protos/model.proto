@@ -40,9 +40,6 @@ message ModelConfig {
 
     // Loss configurations
     required LossConfig loss_config = 13;
-
-    // Mixture of Experts (MoE) configurations
-    optional MoeConfig moe_config = 14;
 }
 
 message PathsConfig {
@@ -113,10 +110,4 @@ message LossConfig {
     required float cls_loss_weight = 3;
 }
 
-message MoeConfig {
-    // Path to the AVOD checkpoint from where the MoE training is started 
-    required string initial_avod_checkpoint_path = 1;
-    // Flag to save weights, rois and features in predictions/weights/ folder
-    required bool save_model_params = 2;
-}
 

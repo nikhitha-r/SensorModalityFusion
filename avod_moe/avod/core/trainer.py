@@ -11,11 +11,6 @@ import time
 from avod.builders import optimizer_builder
 from avod.core import trainer_utils
 from avod.core import summary_utils
-####################################################################################
-# TODO PROJECT: import PIL for image and bev feature saving
-from PIL import Image
-import numpy as np
-####################################################################################
 
 slim = tf.contrib.slim
 
@@ -72,66 +67,27 @@ def train(model, train_config):
     ##############################
     losses_dict, total_loss = model.loss(prediction_dict)
 
-
-    ##############################################################################################
-    # TODO PROJECT: select trainable variables to set gradient to 0(var0)
-
-    var_moe = [var for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='mix_of_experts')]
-    var0 = [var for var in tf.trainable_variables()]
-    var_all_but_var_moe = [var for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
-    
-    for var in var_moe:
-        var0.remove(var)
-        var_all_but_var_moe.remove(var)
-    
-    ##############################################################################################
-
     # Optimizer
-    # training_optimizer = optimizer_builder.build(
-        # train_config.optimizer,
-        # global_summaries,
-        # global_step_tensor)
-
-    ##############################################################################################
-    # TODO PROJECT: create optimizer with 0 gradient
-    training_optimizer0 = tf.train.GradientDescentOptimizer(0.0)
-    training_optimizer1 = optimizer_builder.build(
+    training_optimizer = optimizer_builder.build(
         train_config.optimizer,
         global_summaries,
         global_step_tensor)
-    ##############################################################################################
 
     # Create the train op
     with tf.variable_scope('train_op'):
-        # train_op = slim.learning.create_train_op(
-            # total_loss,
-            # training_optimizer,
-            # clip_gradient_norm=1.0,
-            # global_step=global_step_tensor)
-    ##############################################################################################
-    # TODO PROJECT: create training operations
-        train_op1 = slim.learning.create_train_op(
+        train_op = slim.learning.create_train_op(
             total_loss,
-            training_optimizer1,
-            variables_to_train=var_moe,#[x for x in tf.trainable_variables()],#var_moe,
+            training_optimizer,
             clip_gradient_norm=1.0,
             global_step=global_step_tensor)
-        train_op0 = slim.learning.create_train_op(
-            total_loss, 
-            training_optimizer0,
-            variables_to_train=var0,
-            clip_gradient_norm=1.0,
-            global_step=global_step_tensor)
-        train_op = tf.group(train_op1,train_op0)
-
-    ##############################################################################################
 
     # Save checkpoints regularly.
     saver = tf.train.Saver(max_to_keep=max_checkpoints,
                            pad_step_number=True)
 
     # Add the result of the train_op to the summary
-    tf.summary.scalar("training_loss", train_op1) 
+    tf.summary.scalar("training_loss", train_op)
+
     # Add maximum memory usage summary op
     # This op can only be run on device with gpu
     # so it's skipped on travis
@@ -177,34 +133,9 @@ def train(model, train_config):
             checkpoint_to_restore = saver.last_checkpoints[-1]
             saver.restore(sess, checkpoint_to_restore)
         else:
-
             # Initialize the variables
-            # sess.run(init)
-            ##############################################################################################
-            # TODO PROJECT: take checkpoints from original avod model
-            checkpoint_path_start = "/storage/remote/atcremers62/avod_moe/avod/data/outputs/pyramid_cars_with_aug_example/checkpoints/start/pyramid_cars_with_aug_example-00100000"
-            # variables_to_restore = slim.get_variables_to_restore(include=var0, exclude=var_moe)
-            variables_to_restore = dict()
-            for var in var_all_but_var_moe:
-                # candidates = slim.get_variables(var.name)
-                # for candidate in candidates:
-                    # print(candidate.op.name)
-                    # print(var.op.name)
-                variables_to_restore[var.op.name] = slim.get_unique_variable(var.op.name)
-            print("####################################################################")
-            for i in variables_to_restore:
-                print(i)
-            print("####################################################################")
-
-            init_assign_op, init_feed_dict = slim.assign_from_checkpoint(
-                checkpoint_path_start, variables_to_restore)
             sess.run(init)
-            sess.run(init_assign_op, init_feed_dict)
-            # raise Exception("init successfully!")
-            ##############################################################################################
     else:
-
-
         # Initialize the variables
         sess.run(init)
 
@@ -213,7 +144,6 @@ def train(model, train_config):
                                        global_step_tensor)
     print('Starting from step {} / {}'.format(
         global_step, max_iterations))
-
 
     # Main Training Loop
     last_time = time.time()
@@ -235,7 +165,6 @@ def train(model, train_config):
         # Create feed_dict for inferencing
         feed_dict = model.create_feed_dict()
 
-
         # Write summaries and train op
         if step % summary_interval == 0:
             current_time = time.time()
@@ -243,8 +172,7 @@ def train(model, train_config):
             last_time = current_time
 
             train_op_loss, summary_out = sess.run(
-                [train_op1, summary_merged], feed_dict=feed_dict)
-            print(train_op_loss)
+                [train_op, summary_merged], feed_dict=feed_dict)
 
             print('Step {}, Total Loss {:0.3f}, Time Elapsed {:0.3f} s'.format(
                 step, train_op_loss, time_elapsed))
@@ -252,58 +180,7 @@ def train(model, train_config):
 
         else:
             # Run the train op only
-            sess.run(train_op1, feed_dict)
-        
-        #######################################################################################
-        # TODO PROJECT: output weights for img and bev
-        fc1 = model._moe_model.fc1
-        fc2 = model._moe_model.fc2
-        weights_pre = model._moe_model.out
-        # avod_bev_rois = model.bev_rois
-        # avod_img_rois = model.img_rois
-        # input_img_feat = model._moe_model.img_feature_maps
-        # input_bev_feat = model._moe_model.bev_feature_maps
-        
-        # # print the variables and tensors for debugging
-        # print("fc1 shape: ",fc1.shape)
-        # print("fc2 shape: ",fc2.shape)
-        print("fc2: ", fc2.eval(feed_dict,session=sess))
-        print("weights: ", weights_pre.eval(feed_dict,session=sess))
-        # print("avod_bev_rois shape: ", avod_bev_rois.eval(feed_dict, sess).shape)
-        # print("avod_img_rois shape[0]: ", avod_img_rois.eval(feed_dict, sess).shape[0])
-        # for var in var_moe:
-            # print(var.name)
-        # fc2_weights = var_moe[-2].eval(sess)
-        # fc2_bias = var_moe[-1].eval(sess)
-        # print("fc2 trainable weights shape: ", fc2_weights.shape)
-        # print("fc2 trainable bias shape: ", fc2_bias.shape)
-        # print("fc2 trainable weights: ",var_moe[-2], fc2_weights)
-        # print("fc2 trainable bias: ",var_moe[-1], fc2_bias)
-
-        # result = np.dot(fc1.eval(feed_dict, sess), fc2_weights) + fc2_bias
-        # print("result: ", result)
-# 
-        # paths_config = model.model_config.paths_config
-        # predictions_base_dir = paths_config.pred_dir
-        # 
-        # img_feat = (input_img_feat.eval(feed_dict,sess)*255).astype(np.uint8)
-        # bev_feat = (input_bev_feat.eval(feed_dict,sess)*255).astype(np.uint8)
-        # img_h, img_w = img_feat.shape[1:3]
-        # bev_h, bev_w = bev_feat.shape[1:3]
-        # img_feat = img_feat.reshape((img_h,img_w))
-        # bev_feat = bev_feat.reshape((bev_h,bev_w))
-# 
-        # img_feat_image = Image.fromarray(img_feat, 'L')
-        # bev_feat_image = Image.fromarray(bev_feat, 'L')
-        # if not os.path.exists(os.path.join(predictions_base_dir, "features")):
-            # os.makedirs(os.path.join(predictions_base_dir, "features"))
-        # feat_dir = os.path.join(predictions_base_dir, "features")
-
-        # for saving feature maps
-        # img_feat_image.save(feat_dir+"/img_{}.png".format(step))
-        # bev_feat_image.save(feat_dir+"/bev_{}.png".format(step))
-
-        #######################################################################################
+            sess.run(train_op, feed_dict)
 
     # Close the summary writers
     train_writer.close()

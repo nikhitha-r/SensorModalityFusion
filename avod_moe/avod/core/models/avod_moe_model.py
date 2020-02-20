@@ -16,9 +16,10 @@ from avod.core import box_list_ops
 from avod.core import model
 from avod.core import orientation_encoder
 from avod.core.models.rpn_model import RpnModel
+from avod.core.models.moe_model import MoeModel
 
 
-class AvodModel(model.DetectionModel):
+class AvodMoeModel(model.DetectionModel):
     ##############################
     # Keys for Predictions
     ##############################
@@ -78,7 +79,7 @@ class AvodModel(model.DetectionModel):
         """
 
         # Sets model configs (_config)
-        super(AvodModel, self).__init__(model_config)
+        super(AvodMoeModel, self).__init__(model_config)
 
         self.dataset = dataset
 
@@ -158,6 +159,8 @@ class AvodModel(model.DetectionModel):
 
             with tf.variable_scope('bev'):
                 # Project top anchors into bev and image spaces
+                # bev_proposal_boxes are boxes' x and z coordinate relative to bev_extents
+                # bev_proposal_boxes_norm are normalized boxes in bev_extents' range
                 bev_proposal_boxes, bev_proposal_boxes_norm = \
                     anchor_projector.project_to_bev(
                         avod_projection_in,
@@ -223,6 +226,15 @@ class AvodModel(model.DetectionModel):
             tf_box_indices = get_box_indices(bev_boxes_norm_batches)
 
             # Do ROI Pooling on BEV
+            # tf_box_indices contains 1D tensor with size [num_boxes], each element specifies
+            # batch index to whom this box belongs. Because the batch size here is 1, so it 
+            # doesn't matter
+            # bev_rois is a 4-D tensor of shape [num_boxes, crop_height, crop_width, depth]
+            ####################################################################################
+            # set bev_feature_maps or img_feature_maps to zeros for testing
+            # img_feature_maps = tf.zeros_like(img_feature_maps)
+            ####################################################################################
+
             bev_rois = tf.image.crop_and_resize(
                 bev_feature_maps,
                 bev_proposal_boxes_norm_tf_order,
@@ -237,13 +249,27 @@ class AvodModel(model.DetectionModel):
                 self._proposal_roi_crop_size,
                 name='img_rois')
 
+            # create member variables for accessing
+            # self.bev_rois = bev_rois
+            # self.img_rois = img_rois
+        
+        # Add mixture of experts
+        self._moe_model = MoeModel(img_rois, bev_rois, img_proposal_boxes, bev_proposal_boxes)
+        self._moe_model._set_up_input_pls()
+        self.moe_prediction = self._moe_model.build()
+
+        # Weight the feature before average img and bev
+        weighted_img_rois = tf.multiply(tf.reshape(self.moe_prediction['img_weight'],[-1,1,1,1]),img_rois)
+        weighted_bev_rois = tf.multiply(tf.reshape(self.moe_prediction['bev_weight'],[-1,1,1,1]),bev_rois)
+
         # Fully connected layers (Box Predictor)
         avod_layers_config = self.model_config.layers_config.avod_config
 
+        # Input weighted bev_rois and img_rois to output layer
         fc_output_layers = \
             avod_fc_layers_builder.build(
                 layers_config=avod_layers_config,
-                input_rois=[bev_rois, img_rois],
+                input_rois=[weighted_bev_rois, weighted_img_rois],
                 input_weights=[bev_mask, img_mask],
                 num_final_classes=self._num_final_classes,
                 box_rep=self._box_rep,

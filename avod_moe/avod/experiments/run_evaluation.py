@@ -12,6 +12,7 @@ import avod
 import avod.builders.config_builder_util as config_builder
 from avod.builders.dataset_builder import DatasetBuilder
 from avod.core.models.avod_model import AvodModel
+from avod.core.models.avod_moe_model import AvodMoeModel
 from avod.core.models.rpn_model import RpnModel
 from avod.core.evaluator import Evaluator
 
@@ -72,6 +73,9 @@ def evaluate(model_config, eval_config, dataset_config):
         elif model_name == 'rpn_model':
             model = RpnModel(model_config, train_val_test=eval_mode,
                              dataset=dataset)
+        elif model_name == 'avpd_moe_model':
+            model = AvodMoeModel(model_config, train_val_test=eval_mode,
+                             dataset=dataset)                     
         else:
             raise ValueError('Invalid model name {}'.format(model_name))
 

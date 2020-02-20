@@ -28,4 +28,15 @@ message TrainConfig {
 
     // GPU options
     optional bool allow_gpu_mem_growth = 11 [default = false];
+
+    // Mixture of Experts (MoE) configurations
+    optional MoeConfig moe_config = 12;
+}
+
+
+message MoeConfig {
+    // Path to the AVOD checkpoint from where the MoE training is started 
+    required string initial_avod_checkpoint_path = 1;
+    // Flag to save weights, rois and features in predictions/weights/ folder
+    required bool save_model_params = 2;
 }
