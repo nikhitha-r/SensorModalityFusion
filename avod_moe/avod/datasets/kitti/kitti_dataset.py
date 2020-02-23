@@ -14,6 +14,7 @@ from avod.core import box_3d_encoder
 from avod.core import constants
 from avod.datasets.kitti import kitti_aug
 from avod.datasets.kitti.kitti_utils import KittiUtils
+import random
 
 
 class Sample:
@@ -44,6 +45,8 @@ class KittiDataset:
         self.data_split = self.config.data_split
         self.dataset_dir = os.path.expanduser(self.config.dataset_dir)
         data_split_dir = self.config.data_split_dir
+        # Fetch the train_aug flag to be set
+        self.is_train_aug = self.config.train_aug
 
         self.has_labels = self.config.has_labels
         self.cluster_split = self.config.cluster_split
@@ -129,6 +132,10 @@ class KittiDataset:
 
         # Setup utils object
         self.kitti_utils = KittiUtils(self)
+
+        # Define the augmentation techniques available
+        self.augs = ["brighten", "blur", "snow", "darken", "fog", "shadow", "sun_flare", "rain"]
+
 
     # Paths
     @property
@@ -289,6 +296,16 @@ class KittiDataset:
             point_cloud = self.kitti_utils.get_point_cloud(self.bev_source,
                                                            img_idx,
                                                            image_shape)
+
+            # Check if the run is training and if the train augmentation is set            
+            if self.train_val_test == 'train' and self.is_train_aug:
+                # Generate a random aug probability
+                is_aug = np.random.uniform(0,1)
+                if is_aug > 0.5:
+                    # Make a random choice from the list of available aug options
+                    random_aug = random.choice(self.augs)
+                    # Apply the corresponding aug method to the image
+                    image_input[:, :, 0:3] = getattr(kitti_aug, random_aug)(image_input[:, :, 0:3])
 
             # Augmentation (Flipping)
             if kitti_aug.AUG_FLIPPING in sample.augs:

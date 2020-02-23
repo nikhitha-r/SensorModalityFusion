@@ -11,6 +11,11 @@ import time
 from avod.builders import optimizer_builder
 from avod.core import trainer_utils
 from avod.core import summary_utils
+####################################################################################
+# TODO PROJECT: import PIL for image and bev feature saving
+from PIL import Image
+import numpy as np
+####################################################################################
 
 slim = tf.contrib.slim
 
@@ -65,29 +70,34 @@ def train(model, train_config):
     ##############################
     # Setup loss
     ##############################
-    losses_dict, total_loss = model.loss(prediction_dict)
+    total_loss = model.loss(prediction_dict)
 
-    # Optimizer
-    training_optimizer = optimizer_builder.build(
+
+    
+    training_optimizer1 = optimizer_builder.build(
         train_config.optimizer,
         global_summaries,
         global_step_tensor)
+    ##############################################################################################
 
     # Create the train op
     with tf.variable_scope('train_op'):
-        train_op = slim.learning.create_train_op(
+   
+        train_op1 = slim.learning.create_train_op(
             total_loss,
-            training_optimizer,
+            training_optimizer1,
+            #variables_to_train=var_epbrm,#[x for x in tf.trainable_variables()],#var_moe,
             clip_gradient_norm=1.0,
             global_step=global_step_tensor)
+
+    ##############################################################################################
 
     # Save checkpoints regularly.
     saver = tf.train.Saver(max_to_keep=max_checkpoints,
                            pad_step_number=True)
 
     # Add the result of the train_op to the summary
-    tf.summary.scalar("training_loss", train_op)
-
+    tf.summary.scalar("training_loss", train_op1) 
     # Add maximum memory usage summary op
     # This op can only be run on device with gpu
     # so it's skipped on travis
@@ -133,9 +143,11 @@ def train(model, train_config):
             checkpoint_to_restore = saver.last_checkpoints[-1]
             saver.restore(sess, checkpoint_to_restore)
         else:
-            # Initialize the variables
+           
             sess.run(init)
     else:
+
+
         # Initialize the variables
         sess.run(init)
 
@@ -144,6 +156,7 @@ def train(model, train_config):
                                        global_step_tensor)
     print('Starting from step {} / {}'.format(
         global_step, max_iterations))
+
 
     # Main Training Loop
     last_time = time.time()
@@ -164,6 +177,8 @@ def train(model, train_config):
 
         # Create feed_dict for inferencing
         feed_dict = model.create_feed_dict()
+        
+        #print(feed_dict)
 
         # Write summaries and train op
         if step % summary_interval == 0:
@@ -172,7 +187,8 @@ def train(model, train_config):
             last_time = current_time
 
             train_op_loss, summary_out = sess.run(
-                [train_op, summary_merged], feed_dict=feed_dict)
+                [train_op1, summary_merged], feed_dict=feed_dict)
+            print(train_op_loss)
 
             print('Step {}, Total Loss {:0.3f}, Time Elapsed {:0.3f} s'.format(
                 step, train_op_loss, time_elapsed))
@@ -180,7 +196,7 @@ def train(model, train_config):
 
         else:
             # Run the train op only
-            sess.run(train_op, feed_dict)
-
+            sess.run(train_op1, feed_dict)
+        
     # Close the summary writers
     train_writer.close()

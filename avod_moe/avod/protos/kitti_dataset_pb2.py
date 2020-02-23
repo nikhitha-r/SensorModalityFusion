@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='avod.protos',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x61vod/protos/kitti_dataset.proto\x12\x0b\x61vod.protos\x1a\x1d\x61vod/protos/kitti_utils.proto\"\xcb\x02\n\x12KittiDatasetConfig\x12\x13\n\x04name\x18\x01 \x01(\t:\x05kitti\x12#\n\x0b\x64\x61taset_dir\x18\x02 \x01(\t:\x0e~/Kitti/object\x12\x19\n\ndata_split\x18\x03 \x01(\t:\x05train\x12 \n\x0e\x64\x61ta_split_dir\x18\x04 \x01(\t:\x08training\x12\x18\n\nhas_labels\x18\x05 \x01(\x08:\x04true\x12\x1c\n\rcluster_split\x18\x06 \x01(\t:\x05train\x12\x0f\n\x07\x63lasses\x18\x07 \x03(\t\x12\x14\n\x0cnum_clusters\x18\x08 \x03(\x05\x12\x12\n\nbev_source\x18\t \x02(\t\x12\x10\n\x08\x61ug_list\x18\n \x03(\t\x12\x39\n\x12kitti_utils_config\x18\x14 \x01(\x0b\x32\x1d.avod.protos.KittiUtilsConfig')
+  serialized_pb=_b('\n\x1f\x61vod/protos/kitti_dataset.proto\x12\x0b\x61vod.protos\x1a\x1d\x61vod/protos/kitti_utils.proto\"\xde\x02\n\x12KittiDatasetConfig\x12\x13\n\x04name\x18\x01 \x01(\t:\x05kitti\x12#\n\x0b\x64\x61taset_dir\x18\x02 \x01(\t:\x0e~/Kitti/object\x12\x19\n\ndata_split\x18\x03 \x01(\t:\x05train\x12 \n\x0e\x64\x61ta_split_dir\x18\x04 \x01(\t:\x08training\x12\x18\n\nhas_labels\x18\x05 \x01(\x08:\x04true\x12\x1c\n\rcluster_split\x18\x06 \x01(\t:\x05train\x12\x0f\n\x07\x63lasses\x18\x07 \x03(\t\x12\x14\n\x0cnum_clusters\x18\x08 \x03(\x05\x12\x12\n\nbev_source\x18\t \x02(\t\x12\x10\n\x08\x61ug_list\x18\n \x03(\t\x12\x39\n\x12kitti_utils_config\x18\x14 \x01(\x0b\x32\x1d.avod.protos.KittiUtilsConfig\x12\x11\n\ttrain_aug\x18\x15 \x01(\x08')
   ,
   dependencies=[avod_dot_protos_dot_kitti__utils__pb2.DESCRIPTOR,])
 
@@ -112,6 +112,13 @@ _KITTIDATASETCONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='train_aug', full_name='avod.protos.KittiDatasetConfig.train_aug', index=11,
+      number=21, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -125,7 +132,7 @@ _KITTIDATASETCONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=80,
-  serialized_end=411,
+  serialized_end=430,
 )
 
 _KITTIDATASETCONFIG.fields_by_name['kitti_utils_config'].message_type = avod_dot_protos_dot_kitti__utils__pb2._KITTIUTILSCONFIG
