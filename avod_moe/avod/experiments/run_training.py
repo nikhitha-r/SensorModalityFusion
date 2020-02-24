@@ -47,8 +47,8 @@ def train(model_config, train_config, dataset_config):
             trainer.train(model, train_config)
         elif model_name == 'avod_moe_model':
             model = AvodMoeModel(model_config,
-                              train_val_test=train_val_test,
-                              dataset=dataset)
+                                 train_val_test=train_val_test,
+                                 dataset=dataset)
             trainer_moe.train(model, train_config)
         elif model_name == 'epbrm':
             model = epBRM(model_config, dataset=dataset)
@@ -56,12 +56,12 @@ def train(model_config, train_config, dataset_config):
 
         elif model_name == 'avod_model_new_bev':
             model = AvodModelBEV(model_config,
-                              train_val_test=train_val_test,
-                              dataset=dataset)
+                                 train_val_test=train_val_test,
+                                 dataset=dataset)
         elif model_name == 'avod_model_double_fusion_new_bev':
             model = AvodModelDoubleFusionBEV(model_config,
-                              train_val_test=train_val_test,
-                              dataset=dataset)
+                                             train_val_test=train_val_test,
+                                             dataset=dataset)
         else:
             raise ValueError('Invalid model_name')
 
@@ -69,8 +69,6 @@ def train(model_config, train_config, dataset_config):
             trainer_new_bev.train(model, train_config)
         else:
             trainer.train(model, train_config)
-
-        
 
 
 def main(_):

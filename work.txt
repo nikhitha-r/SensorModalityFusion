@@ -13,4 +13,5 @@ Nikhitha Radhakrishna Naik
 3. Training and hyperparameter tuning
 4. Report
 5. Cleaning the final code
+6. Implementation of EPBRM model code
 

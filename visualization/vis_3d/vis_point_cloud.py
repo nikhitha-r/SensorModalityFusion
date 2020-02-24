@@ -2,27 +2,30 @@ import os
 import numpy as np
 import open3d as o3d
 import cv2
+import argparse
 import scipy
 import scipy.interpolate
 
-
 # objectness threshold
-obj_thres = 0.1
+obj_thres = 0.8
 # input read path
 # data_index = "009000"
 data_index = "000008"
 # data_index = "009001"
-iteration_index = "100000"
+# iteration_index = "100000"
+# folder = "./Aug_sample/Aug_sample/"
 folder = "./"
-point_cloud_path = folder + "velodyne/" + data_index + ".bin"
-image_path = folder + "image_2/" + data_index + ".png"
-label_path = folder + "label_2/" + data_index + ".txt"
-calib_path = folder + "calib/" + data_index + ".txt"
+pred_folder_default = "final_boxes_prediction_dropout_05_119000_noise/"
+
+
+# point_cloud_path = folder + "velodyne/" + data_index + ".bin"
+# image_path = folder + "image_2/" + data_index + ".png"
+# label_path = folder + "label_2/" + data_index + ".txt"
+# calib_path = folder + "calib/" + data_index + ".txt"
 # pred_filepath = folder + "prediction_{}/".format(iteration_index) + data_index + ".txt"
 # pred_filepath = folder + "final_boxes_prediction_dropout_05_119000/" + data_index + ".txt"
 # pred_filepath = folder + "final_boxes_prediction_new_bev_110000/" + data_index + ".txt"
-# pred_filepath = folder + "final_boxes_prediction_org_avod_100000/" + data_index + ".txt"
-pred_filepath = folder + "final_boxes_prediction_dropout_05_119000_noise/" + data_index + ".txt"
+# pred_filepath = folder + "final_boxes_prediction_dropout_05_119000_noise/" + data_index + ".txt"
 
 
 def project_to_feature_map(feature_map, projected_points, calib_matrix):
@@ -32,7 +35,7 @@ def project_to_feature_map(feature_map, projected_points, calib_matrix):
         feature_map: feature map extracted from rgb image
         projected_points: (NX3 np.array) points in lidar frame to be projected
         calib_matrix: (3X4 np.array) transformation from lidar frame to camera 
-                      frame
+                      fram
     Return:
         features: (NX1 np.array) interpolated features of N projected points
     """
@@ -62,9 +65,9 @@ def project_to_feature_map(feature_map, projected_points, calib_matrix):
 
     p_2d = np.round(points_2d[:2]).astype(int)
     fh, fw, _ = feature_map.shape
-    mask1 = p_2d[0] < fw #1242  # and p_2d[0] >=0 and p_2d[1] < 375 and p_2d[1] >= 0
+    mask1 = p_2d[0] < fw  # 1242  # and p_2d[0] >=0 and p_2d[1] < 375 and p_2d[1] >= 0
     mask2 = p_2d[0] > 0
-    mask3 = p_2d[1] < fh #374
+    mask3 = p_2d[1] < fh  # 374
     mask4 = p_2d[1] > 0
     mask = mask1 * mask2 * mask3 * mask4
     mask_l = mask.shape[0]
@@ -312,9 +315,31 @@ def draw_pred_bbox(pred_filepath, calib_path, objectness_threshold=0.90, color=[
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Visualize 3d bounding box.')
+    parser.add_argument('-p', '--pred_folder', dest='pred_folder', default=pred_folder_default,
+                        help='prediction file folder')
+    parser.add_argument('-s', '--scene_index', dest='scene_index', default=data_index, help='scene index, e.g 000008')
+    parser.add_argument('-d', '--data_folder', dest='data_folder', default='./',
+                        help='data folder which contains 4 subfolders: image_2, label_2, velodyne, calib')
+    parser.add_argument('-t', '--threshold', dest='obj_thres', type=float, default=obj_thres,
+                        help='threshold for the objectness score in prediction, only boxes with objectness above this threshold will be shown')
+    args = parser.parse_args()
+
+    point_cloud_path = os.path.join(args.data_folder, "velodyne/", args.scene_index + ".bin")
+    image_path = os.path.join(args.data_folder + "image_2/", args.scene_index + ".png")
+    label_path = os.path.join(args.data_folder + "label_2/", args.scene_index + ".txt")
+    calib_path = os.path.join(args.data_folder + "calib/", args.scene_index + ".txt")
+    pred_filepath = os.path.join(args.data_folder, "final_boxes_prediction_dropout_05_119000_noise/",
+                                 args.scene_index + ".txt")
+
     pcd = draw_point_cloud(point_cloud_path, image_path, paint_color="image")
     gt_line_sets = draw_gt_bbox(label_path, calib_path)
-    pred_line_sets = draw_pred_bbox(pred_filepath, calib_path, objectness_threshold=obj_thres, color=[0, 1, 0])
+    pred_line_sets = draw_pred_bbox(pred_filepath, calib_path, objectness_threshold=args.obj_thres, color=[0, 1, 0])
     line_sets = gt_line_sets + pred_line_sets
+
+    # pcd = draw_point_cloud(point_cloud_path, image_path, paint_color="image")
+    # gt_line_sets = draw_gt_bbox(label_path, calib_path)
+    # pred_line_sets = draw_pred_bbox(pred_filepath, calib_path, objectness_threshold=obj_thres, color=[0, 1, 0])
+    # line_sets = gt_line_sets + pred_line_sets
     # o3d.visualization.draw_geometries([pcd])
     o3d.visualization.draw_geometries([pcd, *line_sets])
