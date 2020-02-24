@@ -213,7 +213,6 @@ def brighten(image_in):
     Returns:
         Modified image
     """
-    print(image_in.shape)
     # Generates value between 0.0 and 2.0
     coeff = 2* np.random.uniform(0.6,1.5)
     # Conversion to HLS

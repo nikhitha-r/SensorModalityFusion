@@ -9,7 +9,7 @@ from random import randint
 from random import sample
 
 image_dir = "/storage/remote/atcremers61/w0017/KITTI/PointRCNN/KITTI/object/training/image_2/"
-noisy_img_dir = "/storage/remote/atcremers61/w0017/test_noise123/"
+noisy_img_dir = "/storage/remote/atcremers61/w0017/Noisy_data/"
 # Open the val file
 with open("/usr/prakt/w0017/try_avod_moe/avod_moe/avod/split/val.txt", "r") as valFile:
     num_set = sum(1 for line in valFile)
@@ -18,7 +18,7 @@ with open("/usr/prakt/w0017/try_avod_moe/avod_moe/avod/split/val.txt", "r") as v
     #lines = valFile.read().splitlines()
 with open("/usr/prakt/w0017/try_avod_moe/avod_moe/avod/split/val.txt", "r") as valFile:
     # Create an aug file to keep a track of the ids of the data samples that were modified.
-    with open("/usr/prakt/w0017/try_avod_moe/avod_moe/avod/split/aug1.txt", "w") as noisyFile:
+    with open("/usr/prakt/w0017/try_avod_moe/avod_moe/avod/split/aug.txt", "w") as noisyFile:
         num_list = []
         for i in valFile:
             num_list.append(i)
