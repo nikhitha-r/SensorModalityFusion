@@ -22,4 +22,7 @@ message EvalConfig {
 
     // Kitti native evaluation
     optional float kitti_score_threshold = 6 [default = 0.1];
+
+    // Flag to save weights, rois and features in predictions/weights/ folder
+    optional bool save_model_params = 7;
 }

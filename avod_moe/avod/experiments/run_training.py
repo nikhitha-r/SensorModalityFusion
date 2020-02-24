@@ -18,6 +18,10 @@ from avod.core.models.epBRM_model import epBRM
 from avod.core import trainer
 from avod.core import trainer_moe
 from avod.core import epbrm_trainer
+from avod.core.models.avod_model_new_bev import AvodModelBEV
+from avod.core.models.avod_model_double_fusion_new_bev import AvodModelDoubleFusionBEV
+from avod.core import trainer_new_bev
+
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -49,8 +53,22 @@ def train(model_config, train_config, dataset_config):
         elif model_name == 'epbrm':
             model = epBRM(model_config, dataset=dataset)
             epbrm_trainer.train(model, train_config)
+
+        elif model_name == 'avod_model_new_bev':
+            model = AvodModelBEV(model_config,
+                              train_val_test=train_val_test,
+                              dataset=dataset)
+        elif model_name == 'avod_model_double_fusion_new_bev':
+            model = AvodModelDoubleFusionBEV(model_config,
+                              train_val_test=train_val_test,
+                              dataset=dataset)
         else:
             raise ValueError('Invalid model_name')
+
+        if model_name == 'avod_model_new_bev' or model_name == 'avod_model_double_fusion_new_bev':
+            trainer_new_bev.train(model, train_config)
+        else:
+            trainer.train(model, train_config)
 
         
 

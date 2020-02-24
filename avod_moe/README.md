@@ -220,7 +220,10 @@ To run a MoE model, IPBEV model or DoubleFusion model, you just need to modify t
 
 1. To run the MoE model, use the config file `pyramid_moe_template.config`.
 2. To run the IPBEV model, use the config file `pyramid_ipbev_template.config`.
-3. To run the DoubleFusion model, use the config file `pyramid_double_fusion_template`.
+3. To run the DoubleFusion model, use the config file `pyramid_double_fusion_template.config`.
+
+#### Specify which model to train/evaluate
+Modify the `model_name` attribute in `model_config` to one of the following : `avod_model`, `avod_moe_model`, `avod_model_new_bev`, `avod_model_double_fusion_new_bev`.
 
 #### Use config files to decide whether to save weights during evaluation
 In the `eval_config`, set the `save_model_params` to True. 

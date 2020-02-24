@@ -37,6 +37,4 @@ message TrainConfig {
 message MoeConfig {
     // Path to the AVOD checkpoint from where the MoE training is started 
     required string initial_avod_checkpoint_path = 1;
-    // Flag to save weights, rois and features in predictions/weights/ folder
-    required bool save_model_params = 2;
 }
