@@ -213,6 +213,18 @@ The `ckpt_indices` here indicates the indices of the checkpoint in the list. If 
 ### Viewing Results
 All results should be saved in `avod/data/outputs`. Here you should see `proposals_and_scores` and `final_predictions_and_scores` results. To visualize these results, you can run `demos/show_predictions_2d.py`. The script needs to be configured to your specific experiments. The `scripts/offline_eval/plot_ap.py` will plot the AP vs. step, and print the 5 highest performing checkpoints for each evaluation metric at the moderate difficulty.
 
+### For MoE and IPBEV Model(project specific)
+
+#### Use config files to specify the model
+To run a MoE model, IPBEV model or DoubleFusion model, you just need to modify the config file in the folder `avod/configs`. There are several examples of config files for training and evaluation of different networks. To use these config files, just specify the path to them in the `--pipeline_config` argument during training and evaluation.
+
+1. To run the MoE model, use the config file `pyramid_moe_template.config`.
+2. To run the IPBEV model, use the config file `pyramid_ipbev_template.config`.
+3. To run the DoubleFusion model, use the config file `pyramid_double_fusion_template`.
+
+#### Use config files to decide whether to save weights during evaluation
+In the `eval_config`, set the `save_model_params` to True. 
+
 ## LICENSE
 Copyright (c) 2018 [Jason Ku](https://github.com/kujason), [Melissa Mozifian](https://github.com/melfm), [Ali Harakeh](www.aharakeh.com), [Steven L. Waslander](http://wavelab.uwaterloo.ca)
 
