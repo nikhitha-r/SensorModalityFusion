@@ -1,0 +1,16 @@
+Work distribution
+
+Chenguang Huang
+1. Implementation of MoE model code
+2. Implementation of IPBEV model code
+3. Visualization code of bounding boxes and weights
+4. Training and hyperparameter tuning
+5. Report
+
+Nikhitha Radhakrishna Naik
+1. Investigation and training point-based 3d detection network
+2. Data generation with different effects
+3. Training and hyperparameter tuning
+4. Report
+5. Cleaning the final code
+
