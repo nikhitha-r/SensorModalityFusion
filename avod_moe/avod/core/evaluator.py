@@ -15,6 +15,9 @@ from avod.core import trainer_utils
 
 from avod.core.models.avod_model import AvodModel
 from avod.core.models.rpn_model import RpnModel
+from avod.core.models.avod_model_new_bev import AvodModelBEV
+from avod.core.models.avod_model_double_fusion_new_bev import AvodModelDoubleFusionBEV
+from avod.core.models.avod_moe_model import AvodMoeModel
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -64,7 +67,10 @@ class Evaluator:
 
         self.model_config = model.model_config
         self.model_name = self.model_config.model_name
-        self.full_model = isinstance(self.model, AvodModel)
+        self.full_model = isinstance(self.model, AvodModel)\
+                            or isinstance(self.model, AvodModelBEV)\
+                            or isinstance(self.model, AvodModelDoubleFusionBEV)\
+                            or isinstance(self.model, AvodMoeModel)
 
         self.paths_config = self.model_config.paths_config
         self.checkpoint_dir = self.paths_config.checkpoint_dir
@@ -168,6 +174,9 @@ class Evaluator:
                 data_split, global_step)
         trainer_utils.create_dir(prop_score_predictions_dir)
 
+        weights_rois_dir = predictions_base_dir + '/weights/{}/{}'.format(data_split, global_step)
+        trainer_utils.create_dir(weights_rois_dir)
+
         if self.full_model:
             # Make sure the box representation is valid
             box_rep = self.model_config.avod_config.avod_box_representation
@@ -264,20 +273,70 @@ class Evaluator:
                 np.savetxt(avod_file_path, predictions_and_scores, fmt='%.5f')
 
                 ##########################################################################################
-                # TODO PROJECT: save weights and cooresponding scene indices
-                weights_pre = self.model.moe_prediction
-                # sess = tf.Session()
-                img_weight = weights_pre['img_weight']#.eval(feed_dict, self._sess)
-                bev_weight = weights_pre['bev_weight']#.eval(feed_dict, self._sess)
-                print(img_weight)
-                print(bev_weight)
-                self.img_weights_list.append(img_weight)
-                self.bev_weights_list.append(bev_weight)
-                weights_dir = predictions_base_dir + '/weights'
-                if not os.path.exists(weights_dir):
-                    os.makedirs(weights_dir)
-                self.weights_path = weights_dir + '/{}.txt'.format(global_step)
-                # np.savetxt(self.weights_path, np.vstack([self.img_weights_list,self.bev_weights_list]).T)
+                if self.eval_config.save_model_params:
+                    weights_rois_dir = predictions_base_dir + '/weights/{}/{}'.format(data_split, global_step)
+                    trainer_utils.create_dir(weights_rois_dir)
+                    weights_pre = self.model.moe_prediction
+                    img_weights_larger = tf.reduce_any(tf.greater(weights_pre['img_weight'], weights_pre['bev_weight']))
+
+                    img_feat_whole_dir = os.path.join(weights_rois_dir, "rois/img_feat_whole/{}/".format(sample_name))
+                    bev_feat_whole_dir = os.path.join(weights_rois_dir, "rois/bev_feat_whole/{}/".format(sample_name))
+                    trainer_utils.create_dir(img_feat_whole_dir)
+                    trainer_utils.create_dir(bev_feat_whole_dir)
+                    img_feat_whole = self.model._rpn_model.img_feature_maps.eval(feed_dict, self._sess)
+                    bev_feat_whole = self.model._rpn_model.bev_feature_maps.eval(feed_dict, self._sess)
+                    self.img_feat_whole_path = os.path.join(img_feat_whole_dir, '{}.npy'.format(sample_name))
+                    self.bev_feat_whole_path = os.path.join(bev_feat_whole_dir, '{}.npy'.format(sample_name))
+                    np.save(self.img_feat_whole_path, img_feat_whole)
+                    np.save(self.bev_feat_whole_path, bev_feat_whole)
+
+                    img_feat_rois_dir = os.path.join(weights_rois_dir, "rois/img_feat/{}/".format(sample_name))
+                    bev_feat_rois_dir = os.path.join(weights_rois_dir, "rois/bev_feat/{}/".format(sample_name))
+                    img_pre_rois_dir = os.path.join(weights_rois_dir, "rois/img_pre/{}/".format(sample_name))
+                    bev_pre_rois_dir = os.path.join(weights_rois_dir, "rois/bev_pre/{}/".format(sample_name))
+                    img_feat_whole_dir = os.path.join(weights_rois_dir, "rois/img_feat_whole/{}/".format(sample_name))
+                    bev_feat_whole_dir = os.path.join(weights_rois_dir, "rois/bev_feat_whole/{}/".format(sample_name))
+                    img_box_dir = os.path.join(weights_rois_dir, "rois/img_box/{}/".format(sample_name))
+                    bev_box_dir = os.path.join(weights_rois_dir, "rois/bev_box/{}/".format(sample_name))
+                    weights_dir = os.path.join(weights_rois_dir, "weights/{}/".format(sample_name))
+                    trainer_utils.create_dir(img_feat_rois_dir)
+                    trainer_utils.create_dir(bev_feat_rois_dir)
+                    trainer_utils.create_dir(img_pre_rois_dir)
+                    trainer_utils.create_dir(bev_pre_rois_dir)
+                    trainer_utils.create_dir(img_feat_whole_dir)
+                    trainer_utils.create_dir(bev_feat_whole_dir)
+                    trainer_utils.create_dir(weights_dir)
+                    trainer_utils.create_dir(img_box_dir)
+                    trainer_utils.create_dir(bev_box_dir)
+
+                    # TODO PROJECT: save weights and cooresponding region features and boxes
+                    img_weight = weights_pre['img_weight'].eval(feed_dict, self._sess)
+                    bev_weight = weights_pre['bev_weight'].eval(feed_dict, self._sess)
+                    bev_pre = self.model._rpn_model._bev_preprocessed.eval(feed_dict, self._sess)
+                    img_feat = self.model._moe_model.img_feature_maps.eval(feed_dict, self._sess)
+                    bev_feat = self.model._moe_model.bev_feature_maps.eval(feed_dict, self._sess)
+                    img_proposal_boxes = self.model._moe_model.img_proposal_boxes.eval(feed_dict, self._sess)
+                    bev_proposal_boxes = self.model._moe_model.bev_proposal_boxes.eval(feed_dict, self._sess)
+
+                    self.img_weights_path = os.path.join(weights_dir, 'img_weights_{}.npy'.format(sample_name))
+                    self.bev_weights_path = os.path.join(weights_dir, 'bev_weights_{}.npy'.format(sample_name))
+                    self.bev_pre_rois_path = os.path.join(bev_pre_rois_dir, '{}.npy'.format(sample_name))
+                    self.img_pre_rois_path = os.path.join(img_pre_rois_dir, '{}.npy'.format(sample_name))
+                    self.img_feat_whole_path = os.path.join(img_feat_whole_dir, '{}.npy'.format(sample_name))
+                    self.bev_feat_whole_path = os.path.join(bev_feat_whole_dir, '{}.npy'.format(sample_name))
+                    self.img_feat_rois_path = os.path.join(img_feat_rois_dir, '{}.npy'.format(sample_name))
+                    self.bev_feat_rois_path = os.path.join(bev_feat_rois_dir, '{}.npy'.format(sample_name))
+                    self.img_box_path = os.path.join(img_box_dir, '{}.npy'.format(sample_name))
+                    self.bev_box_path = os.path.join(bev_box_dir, '{}.npy'.format(sample_name))
+                    np.save(self.img_weights_path, img_weight)
+                    np.save(self.bev_weights_path, bev_weight)
+                    np.save(self.bev_pre_rois_path, bev_pre)
+                    np.save(self.img_feat_whole_path, img_feat_whole)
+                    np.save(self.bev_feat_whole_path, bev_feat_whole)
+                    np.save(self.img_feat_rois_path, img_feat)
+                    np.save(self.bev_feat_rois_path, bev_feat)
+                    np.save(self.img_box_path, img_proposal_boxes)
+                    np.save(self.bev_box_path, bev_proposal_boxes)
                 ##########################################################################################
 
                 if self.full_model:
