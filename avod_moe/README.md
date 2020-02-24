@@ -29,27 +29,27 @@ These videos show detections on several KITTI sequences and our own data in snow
 
 
 ### KITTI Object Detection Results (3D and BEV)
-|              |             |   |           |        AP-3D |           |   |           |       AP-BEV |           |
-|:------------:|:-----------:|---|:---------:|:------------:|:---------:|---|:---------:|:------------:|:---------:|
-|   **Method** | **Runtime** |   |  **Easy** | **Moderate** |  **Hard** |   |  **Easy** | **Moderate** |  **Hard** |
-|        *Car* |             |   |           |              |           |   |           |              |           |
-|         MV3D |      0.36   |   |   71.09   |      62.35   |   55.12   |   |   86.02   |      76.90   |   68.49   |
-|     VoxelNet |      0.23   |   |   77.47   |      65.11   |   57.73   |   | **89.35** |      79.26   |   77.39   |
-|   F-PointNet |      0.17   |   |   81.20   |      70.39   |   62.19   |   |   88.70   |      84.00   |   75.33   |
-|         AVOD |    **0.08** |   |   73.59   |      65.78   |   58.38   |   |   86.80   |    **85.44** |   77.73   |
-|     AVOD-FPN |      0.10   |   | **81.94** |    **71.88** | **66.38** |   |   88.53   |      83.79   | **77.90** |
-|              |             |   |           |              |           |   |           |              |           |
-| *Pedestrian* |             |   |           |              |           |   |           |              |           |
-|     VoxelNet |      0.23   |   |   39.48   |      33.69   |   31.51   |   |   46.13   |      40.74   |   38.11   |
-|   F-PointNet |      0.17   |   | **51.21** |    **44.89** |   40.23   |   |   58.09   |      50.22   |   47.20   |
-|         AVOD |    **0.08** |   |   38.28   |      31.51   |   26.98   |   |   42.52   |      35.24   |   33.97   |
-|     AVOD-FPN |      0.10   |   |   50.80   |      42.81   | **40.88** |   | **58.75** |    **51.05** | **47.54** |
-|              |             |   |           |              |           |   |           |              |           |
-|    *Cyclist* |             |   |           |              |           |   |           |              |           |
-|     VoxelNet |      0.23   |   |   61.22   |      48.36   |   44.37   |   |   66.70   |      54.76   |   50.55   |
-|   F-PointNet |      0.17   |   | **71.96** |    **56.77** | **50.39** |   | **75.38** |    **61.96** | **54.68** |
-|         AVOD |    **0.08** |   |   60.11   |      44.90   |   38.80   |   |   63.66   |      47.74   |   46.55   |
-|     AVOD-FPN |      0.10   |   |   64.00   |      52.18   |   46.61   |   |   68.09   |      57.48   |   50.77   |
+|              |             |     |           |    AP-3D     |           |     |           |    AP-BEV    |           |
+| :----------: | :---------: | --- | :-------: | :----------: | :-------: | --- | :-------: | :----------: | :-------: |
+|  **Method**  | **Runtime** |     | **Easy**  | **Moderate** | **Hard**  |     | **Easy**  | **Moderate** | **Hard**  |
+|    *Car*     |             |     |           |              |           |     |           |              |           |
+|     MV3D     |    0.36     |     |   71.09   |    62.35     |   55.12   |     |   86.02   |    76.90     |   68.49   |
+|   VoxelNet   |    0.23     |     |   77.47   |    65.11     |   57.73   |     | **89.35** |    79.26     |   77.39   |
+|  F-PointNet  |    0.17     |     |   81.20   |    70.39     |   62.19   |     |   88.70   |    84.00     |   75.33   |
+|     AVOD     |  **0.08**   |     |   73.59   |    65.78     |   58.38   |     |   86.80   |  **85.44**   |   77.73   |
+|   AVOD-FPN   |    0.10     |     | **81.94** |  **71.88**   | **66.38** |     |   88.53   |    83.79     | **77.90** |
+|              |             |     |           |              |           |     |           |              |           |
+| *Pedestrian* |             |     |           |              |           |     |           |              |           |
+|   VoxelNet   |    0.23     |     |   39.48   |    33.69     |   31.51   |     |   46.13   |    40.74     |   38.11   |
+|  F-PointNet  |    0.17     |     | **51.21** |  **44.89**   |   40.23   |     |   58.09   |    50.22     |   47.20   |
+|     AVOD     |  **0.08**   |     |   38.28   |    31.51     |   26.98   |     |   42.52   |    35.24     |   33.97   |
+|   AVOD-FPN   |    0.10     |     |   50.80   |    42.81     | **40.88** |     | **58.75** |  **51.05**   | **47.54** |
+|              |             |     |           |              |           |     |           |              |           |
+|  *Cyclist*   |             |     |           |              |           |     |           |              |           |
+|   VoxelNet   |    0.23     |     |   61.22   |    48.36     |   44.37   |     |   66.70   |    54.76     |   50.55   |
+|  F-PointNet  |    0.17     |     | **71.96** |  **56.77**   | **50.39** |     | **75.38** |  **61.96**   | **54.68** |
+|     AVOD     |  **0.08**   |     |   60.11   |    44.90     |   38.80   |     |   63.66   |    47.74     |   46.55   |
+|   AVOD-FPN   |    0.10     |     |   64.00   |    52.18     |   46.61   |     |   68.09   |    57.48     |   50.77   |
 
 Table: Comparison of results with other published methods on the KITTI [3D Object](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) and [BEV](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=bev) benchmarks (accessed Apr 11, 2018).
 
@@ -74,10 +74,33 @@ git submodule update --init --recursive
 ```
 
 2. Install Python dependencies
+
+If you already follow the installation guide lines in the [home README](../README.md), you can skip this step.
+
 ```bash
 cd avod
 pip3 install -r requirements.txt
 pip3 install tensorflow-gpu==1.3.0
+```
+
+If you use conda, please follow the next few steps:
+```bash
+conda create --name avod python=3.5
+conda activate avod
+conda install matplotlib -y
+conda install numpy -y
+conda install -c conda-forge opencv -y
+conda install -c conda-forge pandas -y
+conda install -c conda-forge pillow -y
+conda install -c conda-forge scipy -y
+conda install -c anaconda scikit-learn -y
+conda install -c anaconda tensorflow-gpu==1.3.0 -y
+conda install -c open3d-admin open3d -y
+```
+
+Combined in one line:
+```bash
+conda create --name avod python=3.5 && conda activate avod && conda install matplotlib -y && conda install numpy -y && conda install -c conda-forge opencv -y && conda install -c conda-forge pandas -y && conda install -c conda-forge pillow -y && conda install -c conda-forge scipy -y && conda install -c anaconda scikit-learn -y && conda install -c anaconda tensorflow-gpu==1.3.0 -y && conda install -c open3d-admin open3d -y
 ```
 
 3. Add `avod (top level)` and `wavedata` to your PYTHONPATH
