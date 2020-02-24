@@ -225,6 +225,12 @@ To run a MoE model, IPBEV model or DoubleFusion model, you just need to modify t
 #### Use config files to decide whether to save weights during evaluation
 In the `eval_config`, set the `save_model_params` to True. 
 
+#### Use config files to decide whether to augment the data during the training
+In the `dataset_config`, set the `train_aug` to True. 
+
+#### Use config files to decide from which checkpoint to start MoE training
+In the `train_config` and `moe_config`, set the `initial_avod_checkpoint_path` to path of initial training checkpoint for the MoE training. The checkpoints should be obtained by training the original AVOD model.
+
 ## LICENSE
 Copyright (c) 2018 [Jason Ku](https://github.com/kujason), [Melissa Mozifian](https://github.com/melfm), [Ali Harakeh](www.aharakeh.com), [Steven L. Waslander](http://wavelab.uwaterloo.ca)
 
